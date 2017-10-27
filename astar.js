@@ -1,19 +1,28 @@
 // Only executed our code once the DOM is ready.
 window.onload = function() {
-  // Get a reference to the canvas object
+  console.log('A* Javascript showcase')
+
+  // Get a reference to the canvas object and create an empty project
   var canvas = document.getElementById('myCanvas');
-  // Create an empty project and a view for the canvas:
+  var canvasSize = 400;
+  canvas.height = canvas.width = canvasSize;
   paper.setup(canvas);
-  // Create a Paper.js Path to draw a line into it:
-  var path = new paper.Path();
-  // Give the stroke a color
-  path.strokeColor = 'black';
-  var start = new paper.Point(100, 100);
-  // Move to start and draw a line from there
-  path.moveTo(start);
-  // Note that the plus operator on Point objects does not work
-  // in JavaScript. Instead, we need to call the add() function:
-  path.lineTo(start.add([ 200, -50 ]));
-  // Draw the view now:
-  paper.view.draw();
+
+  var n = 30; // The number of square to render on the board
+  var size = (canvasSize / n) - 1; // the size of a single squre
+
+  // Create the n x n board
+  board = [];
+  for (var i = 0; i < n; i++) {
+    board[i] = []
+    for (var j = 0; j < n; j++) {
+      var x = i * size;
+      var y = j * size;
+      board[i][j] = new Square(x, y, size);
+    }
+  }
+
+  // Color the start and end square.
+  board[0][0].setColor('purple');
+  board[n - 1][n - 1].setColor('purple');
 }
