@@ -1,5 +1,7 @@
 function Square(x, y, size) {
-  this.rect = new paper.Path.Rectangle(x, y, size, size);
+  this.x = x;
+  this.y = y;
+  this.rect = new paper.Path.Rectangle(x * size, y * size, size, size);
   this.rect.strokeColor = 'black';
 
   this.setColor = (color) => {
