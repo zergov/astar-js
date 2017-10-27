@@ -1,0 +1,21 @@
+{
+  "name": "astar-js",
+  "authors": [
+    "Jonathan Lalande <jonathan.lalande.1@ens.etsmtl.ca>"
+  ],
+  "description": "astar algorithm showcase",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "paper": "^0.11.5"
+  }
+}
