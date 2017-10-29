@@ -28,3 +28,15 @@ end.setColor('orange');
 
 console.log('Searching the optimal path for:')
 console.log(`(${start.x}, ${start.y}) --> (${end.x}, ${end.y})`)
+
+function heuristic(a, b) {
+  var x = b.x - a.x;
+  var y = b.y - b.y;
+  return Math.sqrt(x * x + y * y);
+}
+
+var evaluated = []
+var discovered = [start]
+
+start.g = 0; // going to start from start as a cost of 0
+start.f = heuristic(start, end);
