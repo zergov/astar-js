@@ -6,7 +6,7 @@ var canvasSize = 400;
 canvas.height = canvas.width = canvasSize;
 paper.setup(canvas);
 
-var n = 30; // The number of square to render on the board
+var n = 12; // The number of square to render on the board
 var size = (canvasSize / n) - 1; // the size of a single squre
 
 // Create the n x n board
@@ -45,16 +45,17 @@ function manhattan(a, b) {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
-var evaluated = []
-var discovered = [start]
+var evaluated = [];
+var discovered = [start];
 var camefrom = {};
+var path = [];
 
 function getLowestFscore() {
   var lowest = Number.POSITIVE_INFINITY;
   var index = 0;
-  for (var i = 0 ; i < evaluated.length; i++) {
-    if (evaluated[i].f < lowest) {
-      lowest = evaluated[i].f;
+  for (var i = 0 ; i < discovered.length; i++) {
+    if (discovered[i].f < lowest) {
+      lowest = discovered[i].f;
       index = i;
     }
   }
@@ -77,7 +78,30 @@ function getNeighbors(i, j) {
   if (j - 1 >= 0)
     neighbors.push(board[i][j - 1]);
 
+  // diagonals
+  if (i + 1 < n && j + 1 < n)
+    neighbors.push(board[i + 1][j + 1]);
+
+  if (i + 1 < n && j - 1 >= 0)
+    neighbors.push(board[i + 1][j - 1]);
+
+  if (i - 1 >= 0 && j + 1 < n)
+    neighbors.push(board[i - 1][j + 1]);
+
+  if (i - 1 >= 0 && j - 1 >= 0)
+    neighbors.push(board[i - 1][j - 1]);
+
   return neighbors;
+}
+
+function createPath(current) {
+    path = [current]
+    var id = `${current.x}:${current.y}`;
+    while(Object.keys(camefrom).includes(id)) {
+      var current = camefrom[id]
+      path.push(current);
+      id = `${current.x}:${current.y}`;
+    }
 }
 
 start.g = 0; // going to start from start as a cost of 0
@@ -86,73 +110,64 @@ start.f = heuristic(start, end);
 var done = false;
 
 paper.view.onFrame = (event) => {
+  var current;
   if (discovered.length > 0) {
     // run the algorithm
     var index = getLowestFscore();
-    var current = discovered[index];
+    current = discovered[index];
 
     // Stop if we found the end position
     if (current.x === end.x && current.y === end.y) {
-
-      if(!done)
-        console.log('Done !');
-
-      done = true;
+      console.log('Done !');
     }
 
-    discovered.splice(index, 1);
-    evaluated.push(current)
+    if (!done) {
+      discovered.splice(index, 1);
+      evaluated.push(current)
 
-    // color the current square beeing evaluated in green
-    current.setColor('green');
+      var neighbors = getNeighbors(current.x, current.y);
 
-    var neighbors = getNeighbors(current.x, current.y);
+      for (var i = 0; i < neighbors.length; i++) {
+        var neighbor = neighbors[i];
 
-    for (var i = 0; i < neighbors.length; i++) {
-      var neighbor = neighbors[i];
+        if (neighbor.isWall)
+          continue; // if the neighbor is a wall, ignore the shit out of it
 
-      if (neighbor.isWall)
-        continue; // if the neighbor is a wall, ignore the shit out of it
+        if (evaluated.includes(neighbor))
+          continue; // ignore this neighbor since it has already been evaluated
 
-      if (evaluated.includes(neighbor))
-        continue; // ignore this neighbor since it has already been evaluated
+        if (!discovered.includes(neighbor))
+          discovered.push(neighbor);
 
-      if (!discovered.includes(neighbor))
-        discovered.push(neighbor);
+        // The distance from the start position to this neighbor
+        var temp_gscore = current.g + manhattan(start, neighbor);
+        if (temp_gscore >= neighbor.g)
+          continue; // this path sucks
 
-      // The distance from the start position to this neighbor
-      var temp_gscore = current.g + manhattan(current, neighbor);
-      if (temp_gscore >= neighbor.g)
-        continue; // this path sucks
-
-      // This path is the best until now
-      var id = `${neighbor.x}:${neighbor.y}`;
-      camefrom[id] = current;
-      neighbor.g = temp_gscore;
-      neighbor.f = neighbor.g + heuristic(neighbor, end);
+        // This path is the best until now
+        var id = `${neighbor.x}:${neighbor.y}`;
+        camefrom[id] = current;
+        neighbor.g = temp_gscore;
+        neighbor.f = neighbor.g + heuristic(neighbor, end);
+        createPath(current);
+      }
     }
-  } else {
-      if(!done)
-        console.log('Cannot find any solutions !');
 
-    done = true;
   }
 
-  if (!done) {
-    for (var i = 0; i < discovered.length; i++) {
-      discovered[i].setColor('yellow')
-    }
-
-    for (var i = 0; i < evaluated.length; i++) {
-      evaluated[i].setColor('white')
-    }
-
-    current.setColor('blue')
-    var id = `${current.x}:${current.y}`;
-    while(Object.keys(camefrom).includes(id)) {
-      var current = camefrom[id]
-      id = `${current.x}:${current.y}`;
-      current.setColor('blue')
-    }
+  for (var i = 0; i < discovered.length; i++) {
+    discovered[i].setColor('yellow')
   }
+
+  for (var i = 0; i < evaluated.length; i++) {
+    evaluated[i].setColor('white')
+  }
+
+  for (var i = 0; i < path.length; i++) {
+    path[i].setColor('blue')
+  }
+
+
+  start.setColor('orange');
+  end.setColor('orange');
 }
