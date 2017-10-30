@@ -6,7 +6,7 @@ var canvasSize = 400;
 canvas.height = canvas.width = canvasSize;
 paper.setup(canvas);
 
-var n = 10; // The number of square to render on the board
+var n = 30; // The number of square to render on the board
 var size = (canvasSize / n) - 1; // the size of a single squre
 
 // Create the n x n board
@@ -15,7 +15,7 @@ for (var i = 0; i < n; i++) {
   board[i] = []
   for (var j = 0; j < n; j++) {
     board[i][j] = new Square(i, j, size);
-    board[i][j].isWall = Math.random() < 0.4;
+    board[i][j].isWall = Math.random() < 0.45;
     if (board[i][j].isWall)
       board[i][j].setColor('black');
   }
@@ -104,10 +104,25 @@ function createPath(current) {
     }
 }
 
+function drawSolution() {
+  console.log('Done !');
+  discovered = []
+  evaluated = []
+
+  // re-paint everything in white
+  for (var i = 0; i < n; i++) {
+    for(var j = 0; j < n; j++ ) {
+      if (!board[i][j].isWall)
+        board[i][j].setColor('white');
+    }
+  }
+}
+
 start.g = 0; // going to start from start as a cost of 0
 start.f = heuristic(end, start);
 
 var done = false;
+var success = false;
 
 paper.view.onFrame = (event) => {
   var current;
@@ -118,20 +133,10 @@ paper.view.onFrame = (event) => {
 
     // Stop if we found the end position
     if (current.x === end.x && current.y === end.y) {
-      console.log('Done !');
-      discovered = []
-      evaluated = []
       createPath(current);
+      success = true;
       done = true;
-
-      // re-paint everything in white
-      for (var i = 0; i < n; i++) {
-        for(var j = 0; j < n; j++ ) {
-          if (!board[i][j].isWall)
-            board[i][j].setColor('white');
-        }
-      }
-
+      drawSolution();
     }
 
     if (!done) {
@@ -165,6 +170,10 @@ paper.view.onFrame = (event) => {
         createPath(current);
       }
     }
+  } else {
+    done = true;
+    if(!success)
+      success = false;
   }
 
   for (var i = 0; i < discovered.length; i++) {
@@ -176,9 +185,13 @@ paper.view.onFrame = (event) => {
   }
 
   for (var i = 0; i < path.length; i++) {
-    path[i].setColor('blue')
+    if (done && !success)
+      path[i].setColor('red')
+    else if (!done && !success)
+      path[i].setColor('blue')
+    else if (done && success)
+      path[i].setColor('blue')
   }
-
 
   start.setColor('orange');
   end.setColor('orange');
