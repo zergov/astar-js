@@ -38,5 +38,75 @@ function heuristic(a, b) {
 var evaluated = []
 var discovered = [start]
 
+function getLowestFscore() {
+  var lowest = Number.POSITIVE_INFINITY;
+  var index = 0;
+  for (var i = 0 ; i < evaluated.length; i++) {
+    if (evaluated[i].f < lowest) {
+      lowest = evaluated[i].f;
+      index = i;
+    }
+  }
+
+  return index;
+}
+
+function getNeighbors(i, j) {
+  var neighbors = [];
+
+  if (i + 1 < n)
+    neighbors.push(board[i + 1][j]);
+
+  if (i - 1 >= 0)
+    neighbors.push(board[i - 1][j]);
+
+  if (j + 1 < n)
+    neighbors.push(board[i][j + 1]);
+
+  if (j - 1 >= 0)
+    neighbors.push(board[i][j - 1]);
+
+  return neighbors;
+}
+
 start.g = 0; // going to start from start as a cost of 0
 start.f = heuristic(start, end);
+
+paper.view.onFrame = (event) => {
+  if (discovered.length > 0) {
+    // run the algorithm
+    var index = getLowestFscore();
+    var current = discovered[index];
+
+    // Stop if we found the end position
+    if (current.x === end.x && current.y === end.y) {
+      console.log('Found !')
+    }
+
+    discovered.splice(index, 1);
+    evaluated.push(current)
+
+    // color the current square beeing evaluated in green
+    current.setColor('green');
+
+    var neighbors = getNeighbors(current.x, current.y);
+
+    for (var i = 0; i < neighbors.length; i++) {
+      var neighbor = neighbors[i];
+
+      if (evaluated.includes(neighbor))
+        continue; // ignore this neighbor since it has already been evaluated
+
+      if (!discovered.includes(neighbor))
+        discovered.push(neighbor);
+    }
+  }
+
+  for (var i = 0; i < discovered.length; i++) {
+    discovered[i].setColor('yellow')
+  }
+
+  for (var i = 0; i < evaluated.length; i++) {
+    evaluated[i].setColor('red')
+  }
+}
