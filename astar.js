@@ -6,7 +6,7 @@ var canvasSize = 400;
 canvas.height = canvas.width = canvasSize;
 paper.setup(canvas);
 
-var n = 12; // The number of square to render on the board
+var n = 10; // The number of square to render on the board
 var size = (canvasSize / n) - 1; // the size of a single squre
 
 // Create the n x n board
@@ -15,7 +15,7 @@ for (var i = 0; i < n; i++) {
   board[i] = []
   for (var j = 0; j < n; j++) {
     board[i][j] = new Square(i, j, size);
-    board[i][j].isWall = Math.random() < 0.2;
+    board[i][j].isWall = Math.random() < 0.4;
     if (board[i][j].isWall)
       board[i][j].setColor('black');
   }
@@ -36,8 +36,8 @@ console.log('Searching the optimal path for:')
 console.log(`(${start.x}, ${start.y}) --> (${end.x}, ${end.y})`)
 
 function heuristic(a, b) {
-  var x = b.x - a.x;
-  var y = b.y - b.y;
+  var x = a.x - b.x;
+  var y = a.y - b.y;
   return Math.sqrt(x * x + y * y);
 }
 
@@ -105,7 +105,7 @@ function createPath(current) {
 }
 
 start.g = 0; // going to start from start as a cost of 0
-start.f = heuristic(start, end);
+start.f = heuristic(end, start);
 
 var done = false;
 
@@ -119,6 +119,19 @@ paper.view.onFrame = (event) => {
     // Stop if we found the end position
     if (current.x === end.x && current.y === end.y) {
       console.log('Done !');
+      discovered = []
+      evaluated = []
+      createPath(current);
+      done = true;
+
+      // re-paint everything in white
+      for (var i = 0; i < n; i++) {
+        for(var j = 0; j < n; j++ ) {
+          if (!board[i][j].isWall)
+            board[i][j].setColor('white');
+        }
+      }
+
     }
 
     if (!done) {
@@ -140,7 +153,7 @@ paper.view.onFrame = (event) => {
           discovered.push(neighbor);
 
         // The distance from the start position to this neighbor
-        var temp_gscore = current.g + manhattan(start, neighbor);
+        var temp_gscore = current.g + manhattan(current, neighbor);
         if (temp_gscore >= neighbor.g)
           continue; // this path sucks
 
@@ -152,7 +165,6 @@ paper.view.onFrame = (event) => {
         createPath(current);
       }
     }
-
   }
 
   for (var i = 0; i < discovered.length; i++) {
