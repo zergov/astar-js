@@ -15,7 +15,7 @@ for (var i = 0; i < n; i++) {
   board[i] = []
   for (var j = 0; j < n; j++) {
     board[i][j] = new Square(i, j, size);
-    board[i][j].isWall = Math.random() < 0.1;
+    board[i][j].isWall = Math.random() < 0.4;
     if (board[i][j].isWall)
       board[i][j].setColor('black');
   }
@@ -39,10 +39,6 @@ function heuristic(a, b) {
   var x = a.x - b.x;
   var y = a.y - b.y;
   return Math.sqrt(x * x + y * y);
-}
-
-function manhattan(a, b) {
-  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
 var evaluated = [];
@@ -158,7 +154,7 @@ paper.view.onFrame = (event) => {
           discovered.push(neighbor);
 
         // The distance from the start position to this neighbor
-        var temp_gscore = current.g + manhattan(current, neighbor);
+        var temp_gscore = current.g + 1;
         if (temp_gscore >= neighbor.g)
           continue; // this path sucks
 
