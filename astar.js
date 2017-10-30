@@ -6,7 +6,7 @@ var canvasSize = 400;
 canvas.height = canvas.width = canvasSize;
 paper.setup(canvas);
 
-var n = 30; // The number of square to render on the board
+var n = 15; // The number of square to render on the board
 var size = (canvasSize / n) - 1; // the size of a single squre
 
 // Create the n x n board
@@ -35,8 +35,13 @@ function heuristic(a, b) {
   return Math.sqrt(x * x + y * y);
 }
 
+function manhattan(a, b) {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
 var evaluated = []
 var discovered = [start]
+var camefrom = {};
 
 function getLowestFscore() {
   var lowest = Number.POSITIVE_INFINITY;
@@ -94,11 +99,26 @@ paper.view.onFrame = (event) => {
     for (var i = 0; i < neighbors.length; i++) {
       var neighbor = neighbors[i];
 
-      if (evaluated.includes(neighbor))
+      if (evaluated.includes(neighbor)) {
+        console.log('already seen, skip!');
         continue; // ignore this neighbor since it has already been evaluated
+      }
 
       if (!discovered.includes(neighbor))
         discovered.push(neighbor);
+
+      // The distance from the start position to this neighbor
+      var temp_gscore = current.g + manhattan(current, neighbor);
+      if (temp_gscore >= neighbor.g) {
+        console.log('This path sucks..., Skip !');
+        continue; // this path sucks
+      }
+
+      // This path is the best until now
+      var id = `${neighbor.x}:${neighbor.y}`;
+      camefrom[id] = current;
+      neighbor.g = temp_gscore;
+      neighbor.f = neighbor.g + heuristic(neighbor, end);
     }
   }
 
@@ -107,6 +127,14 @@ paper.view.onFrame = (event) => {
   }
 
   for (var i = 0; i < evaluated.length; i++) {
-    evaluated[i].setColor('red')
+    evaluated[i].setColor('white')
+  }
+
+  current.setColor('blue')
+  var id = `${current.x}:${current.y}`;
+  while(Object.keys(camefrom).includes(id)) {
+    var current = camefrom[id]
+    id = `${current.x}:${current.y}`;
+    current.setColor('blue')
   }
 }
