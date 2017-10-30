@@ -6,7 +6,7 @@ var canvasSize = 400;
 canvas.height = canvas.width = canvasSize;
 paper.setup(canvas);
 
-var n = 15; // The number of square to render on the board
+var n = 30; // The number of square to render on the board
 var size = (canvasSize / n) - 1; // the size of a single squre
 
 // Create the n x n board
@@ -15,6 +15,9 @@ for (var i = 0; i < n; i++) {
   board[i] = []
   for (var j = 0; j < n; j++) {
     board[i][j] = new Square(i, j, size);
+    board[i][j].isWall = Math.random() < 0.2;
+    if (board[i][j].isWall)
+      board[i][j].setColor('black');
   }
 }
 
@@ -25,6 +28,9 @@ var end = board[n - 1][n - 1];
 // Style start and end
 start.setColor('orange');
 end.setColor('orange');
+
+// prevent start and end from beeing walls
+start.isWall = end.isWall = false;
 
 console.log('Searching the optimal path for:')
 console.log(`(${start.x}, ${start.y}) --> (${end.x}, ${end.y})`)
@@ -77,6 +83,8 @@ function getNeighbors(i, j) {
 start.g = 0; // going to start from start as a cost of 0
 start.f = heuristic(start, end);
 
+var done = false;
+
 paper.view.onFrame = (event) => {
   if (discovered.length > 0) {
     // run the algorithm
@@ -85,7 +93,11 @@ paper.view.onFrame = (event) => {
 
     // Stop if we found the end position
     if (current.x === end.x && current.y === end.y) {
-      console.log('Found !')
+
+      if(!done)
+        console.log('Done !');
+
+      done = true;
     }
 
     discovered.splice(index, 1);
@@ -99,20 +111,19 @@ paper.view.onFrame = (event) => {
     for (var i = 0; i < neighbors.length; i++) {
       var neighbor = neighbors[i];
 
-      if (evaluated.includes(neighbor)) {
-        console.log('already seen, skip!');
+      if (neighbor.isWall)
+        continue; // if the neighbor is a wall, ignore the shit out of it
+
+      if (evaluated.includes(neighbor))
         continue; // ignore this neighbor since it has already been evaluated
-      }
 
       if (!discovered.includes(neighbor))
         discovered.push(neighbor);
 
       // The distance from the start position to this neighbor
       var temp_gscore = current.g + manhattan(current, neighbor);
-      if (temp_gscore >= neighbor.g) {
-        console.log('This path sucks..., Skip !');
+      if (temp_gscore >= neighbor.g)
         continue; // this path sucks
-      }
 
       // This path is the best until now
       var id = `${neighbor.x}:${neighbor.y}`;
@@ -120,21 +131,28 @@ paper.view.onFrame = (event) => {
       neighbor.g = temp_gscore;
       neighbor.f = neighbor.g + heuristic(neighbor, end);
     }
+  } else {
+      if(!done)
+        console.log('Cannot find any solutions !');
+
+    done = true;
   }
 
-  for (var i = 0; i < discovered.length; i++) {
-    discovered[i].setColor('yellow')
-  }
+  if (!done) {
+    for (var i = 0; i < discovered.length; i++) {
+      discovered[i].setColor('yellow')
+    }
 
-  for (var i = 0; i < evaluated.length; i++) {
-    evaluated[i].setColor('white')
-  }
+    for (var i = 0; i < evaluated.length; i++) {
+      evaluated[i].setColor('white')
+    }
 
-  current.setColor('blue')
-  var id = `${current.x}:${current.y}`;
-  while(Object.keys(camefrom).includes(id)) {
-    var current = camefrom[id]
-    id = `${current.x}:${current.y}`;
     current.setColor('blue')
+    var id = `${current.x}:${current.y}`;
+    while(Object.keys(camefrom).includes(id)) {
+      var current = camefrom[id]
+      id = `${current.x}:${current.y}`;
+      current.setColor('blue')
+    }
   }
 }

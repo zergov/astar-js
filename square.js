@@ -8,6 +8,8 @@ function Square(x, y, size) {
   this.g = Number.POSITIVE_INFINITY;
   this.f = Number.POSITIVE_INFINITY;
 
+  this.isWall = false;
+
   this.setColor = (color) => {
     this.rect.fillColor = color;
   }
