@@ -6,7 +6,7 @@ var canvasSize = 400;
 canvas.height = canvas.width = canvasSize;
 paper.setup(canvas);
 
-var n = 30; // The number of square to render on the board
+var n = 35; // The number of square to render on the board
 var size = (canvasSize / n) - 1; // the size of a single squre
 
 // Create the n x n board
@@ -15,7 +15,7 @@ for (var i = 0; i < n; i++) {
   board[i] = []
   for (var j = 0; j < n; j++) {
     board[i][j] = new Square(i, j, size);
-    board[i][j].isWall = Math.random() < 0.45;
+    board[i][j].isWall = Math.random() < 0.1;
     if (board[i][j].isWall)
       board[i][j].setColor('black');
   }
@@ -176,13 +176,11 @@ paper.view.onFrame = (event) => {
       success = false;
   }
 
-  for (var i = 0; i < discovered.length; i++) {
+  for (var i = 0; i < discovered.length; i++)
     discovered[i].setColor('yellow')
-  }
 
-  for (var i = 0; i < evaluated.length; i++) {
+  for (var i = 0; i < evaluated.length; i++)
     evaluated[i].setColor('white')
-  }
 
   for (var i = 0; i < path.length; i++) {
     if (done && !success)
@@ -193,6 +191,7 @@ paper.view.onFrame = (event) => {
       path[i].setColor('blue')
   }
 
+  // make sure the start and end positions
   start.setColor('orange');
   end.setColor('orange');
 }
